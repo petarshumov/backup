@@ -1,0 +1,22 @@
+---
+- hosts: web
+  sudo: yes
+  tasks:
+  - name: Ensure NTP (for time sync) is installed.
+    yum: name=ntp state=present
+  - name: Ensure NTP is running.
+    service: name=ntpd state=started enabled=yes
+  - name: Install Apache.
+    yum: name={{ item }} state=present
+    with_items:
+    - httpd
+    - httpd-devel
+    - php
+    - php-common
+    - php-xml
+    - php-mysql
+    - php-gd
+    - php-tidy
+    - php-pear
+   - name: Ensure Apache running
+     service: name=httpd state=started enabled=yes

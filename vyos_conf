@@ -1,0 +1,112 @@
+vyos@vyos# show
+ interfaces {
+     ethernet eth0 {
+         address dhcp
+         description outside
+         duplex auto
+         hw-id 00:15:5d:01:e2:01
+         smp_affinity auto
+         speed auto
+     }
+     ethernet eth1 {
+         address 192.168.2.1/24
+         description inside
+         duplex auto
+         hw-id 00:15:5d:01:e2:02
+         smp_affinity auto
+         speed auto
+     }
+     loopback lo {
+     }
+ }
+ nat {
+     source {
+         rule 999 {
+             description "NAT inside to outside"
+             outbound-interface eth0
+             source {
+                 address 192.168.2.1/24
+             }
+             translation {
+                 address masquerade
+             }
+         }
+     }
+ }
+ service {
+     dhcp-server {
+         disabled false
+         shared-network-name ETH1_pool {
+             authoritative disable
+             subnet 192.168.2.0/24 {
+                 default-router 192.168.2.1
+                 dns-server 192.168.2.1
+                 lease 86400
+                 start 192.168.2.100 {
+                     stop 192.168.2.199
+                 }
+             }
+         }
+     }
+     dns {
+         forwarding {
+             cache-size 150
+             listen-on eth1
+         }
+     }
+     ssh {
+         port 22
+     }
+ }
+system {
+     config-management {
+         commit-revisions 20
+     }
+     console {
+         device ttyS0 {
+             speed 9600
+         }
+     }
+     gateway-address 192.168.1.1
+     host-name vyos
+     login {
+         user vyos {
+             authentication {
+                 encrypted-password $1$wMSK2EDo$gfCye/xHZOGUbQupd7cmI1
+             }
+             level admin
+         }
+     }
+     name-server 8.8.8.8
+     name-server 8.8.8.4
+     ntp {
+         server 0.pool.ntp.org {
+         }
+         server 1.pool.ntp.org {
+         }
+         server 2.pool.ntp.org {
+         }
+     }
+     package {
+         auto-sync 1
+         repository community {
+             components main
+             distribution hydrogen
+             password ""
+             url http://packages.vyos.net/vyos
+             username ""
+         }
+     }
+     syslog {
+         global {
+             facility all {
+                 level notice
+             }
+             facility protocols {
+                 level debug
+             }
+         }
+     }
+     time-zone UTC
+ }
+
